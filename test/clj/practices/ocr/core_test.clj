@@ -52,4 +52,7 @@
       6 (t/parse-input six)
       7 (t/parse-input seven)
       8 (t/parse-input eight)
-      9 (t/parse-input nine))))
+      9 (t/parse-input nine)))
+
+  (testing "calculate-checksum"
+    (is (= 0 (t/checksum "345882865")))))
