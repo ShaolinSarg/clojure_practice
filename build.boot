@@ -1,7 +1,7 @@
 (set-env!
  :source-paths #{"src/clj"}
 
- :dependencies '[[org.clojure/clojure "1.8.0"]
+ :dependencies '[[org.clojure/clojure "1.9.0"]
                  [adzerk/boot-test "1.2.0"]
                  [org.clojure/tools.nrepl "0.2.12"]])
 
