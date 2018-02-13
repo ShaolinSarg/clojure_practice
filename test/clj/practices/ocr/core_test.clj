@@ -21,6 +21,10 @@
                    "| ||_||_| _||_ |_   |  | _|"
                    "|_||_| _| _| _||_|  |  ||_ "
                    "                           "))
+(def account-error '(" _  _        _  _  _  _  _ "
+                     "|_||_   |  || ||      _||_ "
+                     "|_||_|  |  ||_||_|  | _||_|"
+                     "                           "))
 
 (def two-accounts
   (concat account-one account-two))
@@ -29,10 +33,16 @@
   (testing "reading multiple lines"
     (is (= '("123456789" "089356712") (t/process-file two-accounts)))))
 
+(deftest read-results
+  (testing "output the result of the read"
+    (is (= '("457508000" "664371495 ERR" "86110??36 ILL")
+           (t/read-results '("457508000" "664371495" "86110??36"))))))
+
 (deftest ocr-tests
   (testing "ocr account one"
     (is (= "123456789" (t/ocr account-one)))
-    (is (= "089356712" (t/ocr account-two))))
+    (is (= "089356712" (t/ocr account-two)))
+    (is (= "86110??36" (t/ocr account-error))))
 
   (testing "get a character"
     (are [expected actual] (= expected actual)
@@ -55,4 +65,6 @@
       9 (t/parse-input nine)))
 
   (testing "calculate-checksum"
-    (is (= 0 (t/checksum "345882865")))))
+    (is (= 0 (t/checksum "345882865")))
+    (is (= 0 (t/checksum "457508000")))
+    (is (= 2 (t/checksum "664371495")))))

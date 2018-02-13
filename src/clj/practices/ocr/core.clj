@@ -21,7 +21,7 @@
 (defn parse-input
   "convert a 4 line ocr image to a number"
   [ocr-image]
-  (get valid-numbers ocr-image))
+  (get valid-numbers ocr-image "?"))
 
 (defn ocr
   "read a single account number from the input"
@@ -40,10 +40,20 @@
   ;account number:  3  4  5  8  8  2  8  6  5
   ;position names:  d9 d8 d7 d6 d5 d4 d3 d2 d1
   ;(d1+2*d2+3*d3+...+9*d9) mod 11 = 0
-  (let [weights (take 9 (iterate inc 1))
+  (let [weights (take 9 (iterate dec 9))
         account-numbers (map #(Integer/parseInt (str %))
-                             (reverse account-number))
+                             account-number)
         weighted (map * account-numbers weights)
         combined (apply + weighted)]
 
     (mod combined 11)))
+
+(defn read-results
+  "indicates the result of parsing the account representation"
+  [accounts]
+  (map (fn [v]
+         (cond
+           (< (count (remove #(= \? %) v)) 9) (str v " ILL")
+           (not= 0 (checksum v)) (str v " ERR")
+           :else (str v))) accounts))
+
