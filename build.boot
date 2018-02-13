@@ -3,7 +3,7 @@
 
  :dependencies '[[org.clojure/clojure "1.9.0"]
                  [adzerk/boot-test "1.2.0"]
-                 [org.clojure/tools.nrepl "0.2.12"]])
+                 [org.clojure/tools.nrepl "0.2.13"]])
 
 (require '[adzerk.boot-test :refer [test]])
 
