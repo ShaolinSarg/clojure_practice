@@ -1,9 +1,5 @@
 (ns practices.ocr.core)
 
-;; {:raw-account
-;;  :status ""
-;;  :alternatives []}
-
 (def zero  " _ | ||_|")
 (def one   "     |  |")
 (def two   " _  _||_ ")
@@ -14,6 +10,7 @@
 (def seven " _   |  |")
 (def eight " _ |_||_|")
 (def nine  " _ |_| _|")
+
 
 (def valid-numbers {zero 0
                     one 1
@@ -26,11 +23,6 @@
                     eight 8
                     nine 9})
 
-;; convert 4 row to single string
-;; convert string to number
-;; check for alternates
-
-
 (defn get-char
   "get the 3 row values that make one character"
   [index raw-data]
@@ -41,18 +33,6 @@
   "convert a 4 line ocr image to a number"
   [ocr-image]
   (get valid-numbers ocr-image "?"))
-
-(defn ocr
-  "read a single account number from the input"
-  [raw-data]
-  (apply str (for [index (range 9)]
-               (parse-input (get-char index raw-data)))))
-
-(defn process-file
-  "take a list of different account data and return account numbers"
-  [file-lines]
-  (->> (partition 4 4 file-lines)
-       (map #(ocr %))))
 
 (defn valid-checksum?
   "validate the checksum of an account number"
@@ -68,37 +48,58 @@
 
     (= 0 (mod combined 11))))
 
+(defn read-result
+  "takes a `number string` and returns one of `ILL` `ERR` or `OK`
+  the status of validating the number converted from ocr image"
+  [number-string]
+  (cond
+    (< (count (remove #(= \? %) number-string)) 9) :ILL
+    (false? (valid-checksum? number-string)) :ERR
+    :else :OK))
+
+(defn ocr
+  "read a single account number from the input"
+  [raw-data]
+  (let [initial-read (apply str (for [index (range 9)]
+                         (parse-input (get-char index raw-data))))
+        status (read-result initial-read)]
+    {:raw raw-data
+     :initial-read initial-read
+     :status status}))
+
+(defn process-file
+  "take a list of different account data and return account numbers"
+  [file-lines]
+  (map #(ocr %)
+       (partition 4 4 file-lines)))
+
 (defn read-results
   "indicates the result of parsing the account representation"
   [accounts]
   (map (fn [v]
-         (cond
-           (< (count (remove #(= \? %) v)) 9) (str v " ILL")
-           (false? (valid-checksum? v)) (str v " ERR")
-           :else (str v))) accounts))
+         (str v " " (name (read-result v)))) accounts))
 
 (defn pixel-variants
   "returns the alternative values of the given value"
   [c]
-  (cond
-    (= \_ c) '(\space \|)
-    (= \space  c) '(\_ \|)
-    (= \|  c) '(\space \_)))
+  (let [pixels #{\| \_ \space}]
+    (disj pixels c)))
 
 (defn char-variants
   [current]
   (let [orig (vec current)]
-    (if (empty? orig)
-      '()
-      (for [i (range 0 (count orig))
-            v (pixel-variants (nth orig i))]
-        (apply str (assoc orig i v))))))
-
+    (into #{} (for [i (range 0 (count orig))
+                    v (pixel-variants (nth orig i))]
+                (apply str (assoc orig i v))))))
 
 (defn alternative-numbers
   "given a representaton returns numbers that have one more or less char"
   [candidate]
   (let [combinations (char-variants candidate)]
-    (remove #(= "?" %)
-            (map #(parse-input %)
-                 combinations))))
+    (into #{} (remove #(= "?" %)
+                      (map #(parse-input %)
+                           combinations)))))
+
+(defn fix-error
+  [raw-input]
+  ["123456789"])
