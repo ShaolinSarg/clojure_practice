@@ -84,10 +84,10 @@
 
 (deftest valid-checksum-tests
   (testing "valid checksums"
-    (is (= true (t/valid-checksum? "345882865")))
-    (is (= true (t/valid-checksum? "457508000"))))
+    (is (true? (t/valid-checksum? "345882865")))
+    (is (true? (t/valid-checksum? "457508000"))))
   (testing "invalid checksum"
-    (is (= false (t/valid-checksum? "664371495")))))
+    (is (false? (t/valid-checksum? "664371495")))))
 
 (deftest pixel-variants-tests
   (testing "return other values"

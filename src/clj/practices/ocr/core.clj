@@ -1,4 +1,5 @@
-(ns practices.ocr.core)
+(ns practices.ocr.core
+  (:require [clojure.string :as str]))
 
 (def zero  " _ | ||_|")
 (def one   "     |  |")
@@ -26,7 +27,7 @@
 (defn get-char
   "get the 3 row values that make one character"
   [index raw-data]
-  (apply str (take 3 (map #(apply str (nth (partition 3 3 %) index))
+  (str/join (take 3 (map #(str/join (nth (partition 3 3 %) index))
                           raw-data))))
 
 (defn parse-input
@@ -46,7 +47,7 @@
         weighted (map * account-numbers weights)
         combined (apply + weighted)]
 
-    (= 0 (mod combined 11))))
+    (zero? (mod combined 11))))
 
 (defn read-result
   "takes a `number string` and returns one of `ILL` `ERR` or `OK`
@@ -60,7 +61,7 @@
 (defn ocr
   "read a single account number from the input"
   [raw-data]
-  (let [initial-read (apply str (for [index (range 9)]
+  (let [initial-read (str/join (for [index (range 9)]
                          (parse-input (get-char index raw-data))))
         status (read-result initial-read)]
     {:raw raw-data
@@ -70,7 +71,7 @@
 (defn process-file
   "take a list of different account data and return account numbers"
   [file-lines]
-  (map #(ocr %)
+  (map ocr
        (partition 4 4 file-lines)))
 
 (defn read-results
@@ -88,16 +89,16 @@
 (defn char-variants
   [current]
   (let [orig (vec current)]
-    (into #{} (for [i (range 0 (count orig))
+    (set (for [i (range 0 (count orig))
                     v (pixel-variants (nth orig i))]
-                (apply str (assoc orig i v))))))
+                (str/join (assoc orig i v))))))
 
 (defn alternative-numbers
   "given a representaton returns numbers that have one more or less char"
   [candidate]
   (let [combinations (char-variants candidate)]
-    (into #{} (remove #(= "?" %)
-                      (map #(parse-input %)
+    (set (remove #(= "?" %)
+                      (map parse-input
                            combinations)))))
 
 (defn fix-error
