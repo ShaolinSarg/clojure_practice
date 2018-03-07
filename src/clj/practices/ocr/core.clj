@@ -30,6 +30,10 @@
   (str/join (take 3 (map #(str/join (nth (partition 3 3 %) index))
                           raw-data))))
 
+(defn get-chars
+  [raw]
+  (for [i (range 9)] (get-char i raw)))
+
 (defn parse-input
   "convert a 4 line ocr image to a number"
   [ocr-image]
@@ -61,8 +65,8 @@
 (defn ocr
   "read a single account number from the input"
   [raw-data]
-  (let [initial-read (str/join (for [index (range 9)]
-                         (parse-input (get-char index raw-data))))
+  (let [initial-read (str/join (map parse-input
+                                    (get-chars raw-data)))
         status (read-result initial-read)]
     {:raw raw-data
      :initial-read initial-read
@@ -102,5 +106,12 @@
                            combinations)))))
 
 (defn fix-error
-  [raw-input]
-  ["123456789"])
+  [initial-read raw-input]
+  (let [alternative-characters (map alternative-numbers
+                                 (get-chars raw-input))
+        alternative-accounts   (for [i (range 9)
+                                     v (nth alternative-characters i)]
+                                 (str/join (assoc (vec initial-read) i v)))]
+    (->> alternative-accounts
+         (remove #(str/includes? % "?"))
+         (remove (complement valid-checksum?)))))

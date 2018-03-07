@@ -11,18 +11,18 @@
                          "  | _| _||_||_ |_   ||_||_|"
                          "  ||_  _|  | _ |_|  ||_| _|"
                          "                           "))
-(def account-one-errors '("    _  _     _  _  _  _    "
-                          "  | _| _||_||_ |_   ||_||_|"
-                          "  ||_  _|  | _ |_|  ||_| _|"
-                          "                           "))
 (def account-two '(" _  _  _  _  _  _  _     _ "
                    "| ||_||_| _||_ |_   |  | _|"
                    "|_||_| _| _| _||_|  |  ||_ "
                    "                           "))
-(def account-error '(" _  _        _  _  _  _  _ "
-                     "|_||_   |  || ||      _||_ "
-                     "|_||_|  |  ||_||_|  | _||_|"
-                     "                           "))
+(def account-error    '(" _  _        _  _  _  _  _ "
+                        "|_||_   |  || ||      _||_ "
+                        "|_||_|  |  ||_||_|  | _||_|"
+                        "                           "))
+(def account-all-ones '("                           "
+                        "  |  |  |  |  |  |  |  |  |"
+                        "  |  |  |  |  |  |  |  |  |"
+                        "                           "))
 
 (def two-accounts
   (concat account-one account-two))
@@ -115,5 +115,7 @@
 
 (deftest fix-misread
   (testing "single missing read"
-    (is (= ["123456789"] (t/fix-error account-one-error)))
-    (is (= ["123456789"] (t/fix-error account-one-errors)))))
+    (is (= ["123456789"] (t/fix-error "1234?6789" account-one-error)))
+    (is (= ["711111111"] (t/fix-error "111111111" account-all-ones))))
+  (testing "no valid alternatives"
+    (is (empty? (t/fix-error "86110??36" account-error)))))
