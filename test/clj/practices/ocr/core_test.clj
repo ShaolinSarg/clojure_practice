@@ -24,18 +24,16 @@
                         "  |  |  |  |  |  |  |  |  |"
                         "                           "))
 
+(def account-all-eights '(" _  _  _  _  _  _  _  _  _ "
+                          "|_||_||_||_||_||_||_||_||_|"
+                          "|_||_||_||_||_||_||_||_||_|"
+                          "                           "))
+(def account-no-alternative '("    _  _  _  _  _  _     _ " 
+                              "|_||_|| || ||_   |  |  |   " 
+                              "  | _||_||_||_|  |  |  | _|"))
+
 (def two-accounts
   (concat account-one account-two))
-
-(deftest file-process-tests
-  (testing "reading multiple lines"
-    (is (= [{:raw account-one
-             :initial-read "123456789"
-             :status :OK}
-            {:raw account-two
-             :initial-read "089356712"
-             :status :ERR}]
-           (t/process-file two-accounts)))))
 
 (deftest read-result
   (testing "return the right status for the given number"
@@ -58,7 +56,19 @@
   (testing "raw-input"
     (is (= account-one (:raw (t/ocr account-one)))))
   (testing "status"
-    (is (= :OK (:status (t/ocr account-one))))))
+    (testing "well formed number"
+      (is (= :OK (:status (t/ocr account-one)))))
+    (testing "more than one valid value"
+      (is (= :AMB (:status (t/ocr account-all-eights)))))
+    (testing "initial error, but one valid alternative"
+      (is (= :OK (:status (t/ocr account-two)))))
+    (testing "no valid alternatives"
+      (is (= :ILL (:status (t/ocr account-no-alternative))))))
+  (testing "final-value"
+    (testing "good first read"
+      (is (= "123456789" (:final-value (t/ocr account-one)))))
+    (testing "one valid alternative"
+      (is (= "089356772" (:final-value (t/ocr account-two)))))))
 
 (deftest get-char-tests
   (testing "get a character"
@@ -114,8 +124,10 @@
     (is (subset? #{0 6 9} (t/alternative-numbers " _ |_||_|")))))
 
 (deftest fix-misread
-  (testing "single missing read"
+  (testing "single alternative read"
     (is (= ["123456789"] (t/fix-error "1234?6789" account-one-error)))
     (is (= ["711111111"] (t/fix-error "111111111" account-all-ones))))
   (testing "no valid alternatives"
-    (is (empty? (t/fix-error "86110??36" account-error)))))
+    (is (empty? (t/fix-error "86110??36" account-error))))
+  (testing "more than one valid alternative"
+    (is (= ["888886888" "888888988" "888888880"] (t/fix-error "888888888" account-all-eights)))))

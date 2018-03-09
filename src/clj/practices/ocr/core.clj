@@ -1,5 +1,6 @@
 (ns practices.ocr.core
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (def zero  " _ | ||_|")
 (def one   "     |  |")
@@ -11,7 +12,6 @@
 (def seven " _   |  |")
 (def eight " _ |_||_|")
 (def nine  " _ |_| _|")
-
 
 (def valid-numbers {zero 0
                     one 1
@@ -33,6 +33,7 @@
 (defn get-chars
   [raw]
   (for [i (range 9)] (get-char i raw)))
+
 
 (defn parse-input
   "convert a 4 line ocr image to a number"
@@ -61,22 +62,6 @@
     (< (count (remove #(= \? %) number-string)) 9) :ILL
     (false? (valid-checksum? number-string)) :ERR
     :else :OK))
-
-(defn ocr
-  "read a single account number from the input"
-  [raw-data]
-  (let [initial-read (str/join (map parse-input
-                                    (get-chars raw-data)))
-        status (read-result initial-read)]
-    {:raw raw-data
-     :initial-read initial-read
-     :status status}))
-
-(defn process-file
-  "take a list of different account data and return account numbers"
-  [file-lines]
-  (map ocr
-       (partition 4 4 file-lines)))
 
 (defn read-results
   "indicates the result of parsing the account representation"
@@ -115,3 +100,29 @@
     (->> alternative-accounts
          (remove #(str/includes? % "?"))
          (remove (complement valid-checksum?)))))
+
+(defn ocr
+  "read a single account number from the input"
+  [raw-data]
+  (let [initial-read (str/join (map parse-input
+                                    (get-chars raw-data)))
+        initial-read-status (read-result initial-read)
+        alternatives (fix-error initial-read raw-data)
+        status (condp = initial-read-status
+                 :OK initial-read-status
+                 (cond
+                   (empty? alternatives)      :ILL
+                   (< 1 (count alternatives)) :AMB
+                   :else                      :OK))]
+    {:raw raw-data
+     :initial-read initial-read
+     :status status
+     :final-value (condp = initial-read-status
+                    :OK initial-read
+                    (first alternatives))}))
+
+
+(defn -main [args]
+  (let [input-file (io/file args)]
+    (map ocr
+         (partition 4 4 (slurp input-file)))))
