@@ -1,0 +1,1 @@
+(ns practices.kata-potter)
