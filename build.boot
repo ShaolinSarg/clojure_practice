@@ -4,7 +4,8 @@
  :dependencies '[[org.clojure/clojure "1.9.0"]
                  [adzerk/boot-test "1.2.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
-                 [tolitius/boot-check "0.1.9"]])
+                 [tolitius/boot-check "0.1.9"]
+                 [org.clojure/test.check "0.9.0" :scope "test"]])
 
 (require '[adzerk.boot-test :refer [test]]
          '[tolitius.boot-check :as check])
