@@ -25,7 +25,3 @@
           (recur (str out n) (- rem v) nums)
           (recur out rem (rest nums)))) 
       out)))
-
-(convert-arabic 10)
-
-;;1732 would be denoted MDCCXXXII
